@@ -22,7 +22,7 @@
 - nSLOC: 129
 - Complexity Score: Moderate
 
-[//]: # "contest-details-open"
+[//]: # (contest-details-open)
 
 ## About the Project
 
@@ -44,8 +44,9 @@ Actors:
     Vault Owner: The owner of the EggVault contract responsible for managing deposited eggs.
 ```
 
-[//]: # "contest-details-close"
-[//]: # "scope-open"
+[//]: # (contest-details-close)
+
+[//]: # (scope-open)
 
 ## Scope (contracts)
 
@@ -70,8 +71,9 @@ Compatibilities:
       - Custom ERC721 EggstravaganzaEggNFT tokens
 ```
 
-[//]: # "scope-close"
-[//]: # "getting-started-open"
+[//]: # (scope-close)
+
+[//]: # (getting-started-open)
 
 ## Setup
 
@@ -98,9 +100,10 @@ forge build
 forge test
 ```
 
-[//]: # "getting-started-close"
-[//]: # "known-issues-open"
+[//]: # (getting-started-close)
+
+[//]: # (known-issues-open)
 
 None Reported!
 
-[//]: # "known-issues-close"
+[//]: # (known-issues-close)
