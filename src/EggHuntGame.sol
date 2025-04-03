@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.23;
+// audit: limit this to a singular compiler version
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {EggstravaganzaNFT} from "./EggstravaganzaNFT.sol";
@@ -24,6 +25,7 @@ contract EggHuntGame is Ownable {
 
     /// @notice Chance (in percent) to find an egg on each search attempt.
     uint256 public eggFindThreshold = 20; // Default is a 20% chance
+    // audit:  no magic numnbers, please
 
     event GameStarted(uint256 startTime, uint256 endTime);
     event EggFound(address indexed player, uint256 tokenId, uint256 totalEggsFound);
@@ -57,7 +59,9 @@ contract EggHuntGame is Ownable {
     /// @notice Allows the owner to adjust the egg-finding chance.
     function setEggFindThreshold(uint256 newThreshold) external onlyOwner {
         require(newThreshold <= 100, "Threshold must be <= 100");
+        // audit: no magic numbers, please
         eggFindThreshold = newThreshold;
+        // audit: let's get an event for this state-change
     }
 
     /// @notice Participants call this function to search for an egg.
@@ -68,6 +72,7 @@ contract EggHuntGame is Ownable {
         require(block.timestamp <= endTime, "Game ended");
 
         // Pseudo-random number generation (for demonstration purposes only)
+        // audit: are we pretending that this can't be front-run, here?
         uint256 random = uint256(
             keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender, eggCounter))
         ) % 100;

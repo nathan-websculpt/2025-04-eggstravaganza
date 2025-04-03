@@ -26,8 +26,10 @@ contract EggstravaganzaNFT is ERC721, Ownable {
     /// Only the approved game contract can mint eggs.
     function mintEgg(address to, uint256 tokenId) external returns (bool) {
         require(msg.sender == gameContract, "Unauthorized minter");
+
+        // audit: use safemint here
         _mint(to, tokenId);
-        totalSupply += 1;
+        totalSupply += 1; // audit: no magic numbers, please
         return true;
     }
 }
