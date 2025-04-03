@@ -15,8 +15,8 @@ contract EggHuntGame is Ownable {
     bool public gameActive;
 
     /// @notice References to the EggstravaganzaNFT and EggVault contracts.
-    EggstravaganzaNFT public eggNFT;
-    EggVault public eggVault;
+    EggstravaganzaNFT public eggNFT; // audit: should be immutable
+    EggVault public eggVault;  // audit: should be immutable
 
     /// @notice Tracks the number of eggs found per participant.
     mapping(address => uint256) public eggsFound;
@@ -66,6 +66,7 @@ contract EggHuntGame is Ownable {
 
     /// @notice Participants call this function to search for an egg.
     /// A pseudo-random number is generated and, if below the threshold, an egg is found.
+    // audit: slither, possible reentrancy on eggNFT.mintEgg()
     function searchForEgg() external {
         require(gameActive, "Game not active");
         require(block.timestamp >= startTime, "Game not started yet");
@@ -81,6 +82,7 @@ contract EggHuntGame is Ownable {
             eggCounter++;
             eggsFound[msg.sender] += 1;
             eggNFT.mintEgg(msg.sender, eggCounter);
+            // audit: ignores what was returned by mintEgg
             emit EggFound(msg.sender, eggCounter, eggsFound[msg.sender]);
         }
     }

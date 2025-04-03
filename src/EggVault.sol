@@ -36,6 +36,7 @@ contract EggVault is Ownable {
     }
     
     /// @notice Allows the depositor to withdraw their egg from the vault.
+    // audit: slither, possible reentrancy on eggNFT.transferFrom()
     function withdrawEgg(uint256 tokenId) public {
         require(storedEggs[tokenId], "Egg not in vault");
         require(eggDepositors[tokenId] == msg.sender, "Not the original depositor");

@@ -1,1 +1,1 @@
-genhtml lcov.info -o report --branch-coverage --rc derive_function_end_line=0
+genhtml --ignore-errors source,unmapped lcov.info -o report --branch-coverage --rc derive_function_end_line=0

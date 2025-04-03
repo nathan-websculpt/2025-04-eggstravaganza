@@ -6,6 +6,26 @@ import "../src/EggstravaganzaNFT.sol";
 import "../src/EggVault.sol";
 import "../src/EggHuntGame.sol";
 
+contract Reenter {
+    address public nftAddress;
+
+    constructor(address _nftAddress) {
+        nftAddress = _nftAddress;
+    }
+    fallback() external payable {
+        uint256 nftsToTake = 20;
+        // uint256 totalSupplyBefore = nftAddress.totalSupply();
+        uint256 totalSupplyBefore = EggstravaganzaNFT(nftAddress).totalSupply();
+
+        uint256 totalSupplyAfter = totalSupplyBefore + 1;
+        
+        bytes memory data = abi.encodeWithSignature("mintEgg(address,uint256)", address(this), totalSupplyAfter);
+        if (totalSupplyAfter <= nftsToTake) {
+            (msg.sender).call(data);
+        }
+    }
+}
+
 contract EggGameTest is Test {
     EggstravaganzaNFT nft;
     EggVault vault;
@@ -32,6 +52,42 @@ contract EggGameTest is Test {
 
         // Configure the vault with the NFT contract.
         vault.setEggNFT(address(nft));
+    }
+
+    // require(msg.sender == gameContract) does a good job of stopping this
+    function testReentrancyOnMint() public {
+        Reenter reenter = new Reenter(address(nft));
+        address reenterAddr = address(reenter);
+        vm.startPrank(reenterAddr);
+        nft.mintEgg(reenterAddr, 1);
+        nft.mintEgg(reenterAddr, 1); //should fail
+        vm.stopPrank();
+        assertEq(nft.totalSupply(), 21);
+    }
+
+    function testCanWithdrawSomeoneElsesEgg() public {
+        // Mint an egg to alice via the game contract.
+        vm.prank(address(game));
+        nft.mintEgg(alice, 20);
+        assertEq(nft.ownerOf(20), alice);
+
+        // Alice approves the game to transfer her NFT.
+        vm.prank(alice);
+        nft.approve(address(game), 20);
+
+        // Alice deposits her egg into the vault via the game contract.
+        vm.prank(alice);
+        game.depositEggToVault(20);
+        // The NFT should now be owned by the vault.
+        assertEq(nft.ownerOf(20), address(vault));
+        // Vault records should indicate the egg is deposited by alice.
+        assertTrue(vault.isEggDeposited(20));
+        assertEq(vault.eggDepositors(20), alice);
+
+        // Bob tries to withdraw the egg but should fail.
+        vm.prank(bob);
+        vm.expectRevert("Not the original depositor");
+        vault.withdrawEgg(20);
     }
 
     // -----------------------------------------
