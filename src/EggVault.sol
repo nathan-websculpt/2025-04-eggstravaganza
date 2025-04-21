@@ -44,6 +44,7 @@ contract EggVault is Ownable {
         storedEggs[tokenId] = false;
         delete eggDepositors[tokenId];
 
+        // a: safeTransferFrom prevents NFTs from getting stuck (if they are sent to a contract that does not implement safeTransferFrom)
         eggNFT.transferFrom(address(this), msg.sender, tokenId);
         emit EggWithdrawn(msg.sender, tokenId);
     }

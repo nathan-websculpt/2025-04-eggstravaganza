@@ -66,7 +66,7 @@ contract EggHuntGame is Ownable {
 
     /// @notice Participants call this function to search for an egg.
     /// A pseudo-random number is generated and, if below the threshold, an egg is found.
-    // audit: slither, possible reentrancy on eggNFT.mintEgg()
+    // audit: limit amount of calls to this function
     function searchForEgg() external {
         require(gameActive, "Game not active");
         require(block.timestamp >= startTime, "Game not started yet");
